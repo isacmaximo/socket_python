@@ -102,5 +102,23 @@ while True:
         data = json.dumps(jsonDict)
         connection.send(bytes(data, encoding="utf-8"))
     
+    #função de salvar a lista de compras em um txt
+    elif res["c"] == "s":
+        print('\nSalvando lista de compras...')
+        lista_compras = res["carrinho"]
+
+        arquivo = open("compras.txt", "a")
+        arquivo.writelines("==========================================")
+        for i in range(len(lista_compras)):
+            arquivo.writelines("\nProduto: " + lista_compras[i]["produto"])
+            arquivo.writelines("\nQuantidade: " + str(lista_compras[i]["quantidade"]))
+            arquivo.writelines("\nValor (unidade): " + "R$" + str(lista_compras[i]["valor"]))
+            arquivo.writelines("\n")
+        
+        arquivo.writelines("\n\nTotal" + " R$" + str(res["total"]))
+        arquivo.close()
+        
+
+    
 
 

@@ -58,6 +58,9 @@ def listar():
     recebido = data.decode("utf-8") #deserializando o json na codificação utf-8
     resposta = json.loads(recebido) #tranformando os dados recebidos em json novamente
 
+    #lista de ítens recebida pelo json
+    lista_itens = resposta["lista"][0]["itens"]
+
     carrinho = [] #lista que representará o carrinho
     
     options = () #tupla de opções de código do ítem (será carragada logo abaixo)
@@ -72,7 +75,7 @@ def listar():
 
     for i in range (len(resposta["lista"][0]["itens"])): #laço que percorrerá toda a lista de ítens recebido através do json
         #string que está recebendo  código nome e valor unitário de cada ítem
-        exibir = exibir + str(i) + " - " + resposta["lista"][0]["itens"][i]["nome"] + " - " + "R$" + str(resposta["lista"][0]["itens"][i]["valor"]) + "\n"
+        exibir = exibir + str(i) + " - " + lista_itens[i]["nome"] + " - " + "R$" + str(lista_itens[i]["valor"]) + "\n"
     
     #Texto(UI) com todos os ítens (recebidos da string "exibir")
     ListaLabel = Label(LadoDireito, text = exibir, font = ("Arial", 12), bg = "gray15", fg = "white", justify="left")
@@ -104,6 +107,39 @@ def listar():
     cb2.pack()
     cb2.place(x = 250, y = 300)
 
+    #função de remover do carrinho
+    def rem_carrinho():
+        produto =  int(variable.get()) #codigo do produto é pego pela varável do menu de códigos do produto
+        quantidade = int(variable2.get()) #quantidade do produto é pego pela varável do menu de quantidade do produto
+
+        #função para verificar se um ítem já existe no carrinho
+        def  pesquisar():
+            for i in range(len(carrinho)): #laço irá percorrer todo o carrinho de compras
+                if carrinho[i]["produto"] == lista_itens[produto]["nome"]: #caso o produto que está no carrinho é o mesmo que está tentando remover
+                    
+                    subt = int(carrinho[i]["quantidade"]) - quantidade #varivável que representa a subtração
+
+                    if subt < 0: #se o valor da subtração for menor que zero
+                        messagebox.showwarning("Informação de remoção", "Não pode remover mais do que tem no carrinho!")
+
+                    elif subt == 0: #se o valor da subtração for igual a zero
+                        messagebox.showinfo("Informação de remoção", lista_itens[produto]["nome"] + " removido do seu carrinho!\nNão existem mais unidades deste produto no carrinho!")
+                        carrinho.pop(i)         
+                    
+                    elif subt > 0: #se  o valor da subtração 
+                        messagebox.showinfo("Informação de remoção", str(quantidade) + " unidade(s) de " + lista_itens[produto]["nome"] + " removido do seu carrinho!")
+                        carrinho[i]["quantidade"] = str(int(carrinho[i]["quantidade"]) - quantidade)
+                        
+
+                    return 1 #retorno 1 representa que já foi alterado
+            return 0 #retorno 0 representa que o ítem não existe no carrinho
+        
+        valor_pesquisa = pesquisar() #variável que pega o retorno da função pesquisar (valor 0 ou 1)
+
+        if valor_pesquisa == 0: # se o valor da pesquisa for igual a zero, ou seja o produto não está no carrinho
+            messagebox.showwarning("Informação de remoção", "Este produto não existe no carrinho!")
+
+        
     
     #função de adicionar no carrinho
     def adc_carrinho():
@@ -113,37 +149,45 @@ def listar():
         #função para verificar se um ítem já existe no carrinho
         def  pesquisar():
             for i in range(len(carrinho)): #laço irá percorrer todo o carrinho de compras
-                if carrinho[i]["produto"] == produto: #caso o produto que está no carrinho é o mesmo que está tentando adicionar
-                    carrinho[i]["quantidade"] = str(carrinho[i]["quantidade"] + quantidade) #apenas atualiza a quantidade desse valor
+                if carrinho[i]["produto"] == lista_itens[produto]["nome"]: #caso o produto que está no carrinho é o mesmo que está tentando adicionar
+                    messagebox.showinfo("Informação de compra", str(quantidade) + " " + lista_itens[produto]["nome"] + " adicionado(s) ao carrinho!")
+                    carrinho[i]["quantidade"] = str(int(carrinho[i]["quantidade"]) + quantidade) #apenas atualiza a quantidade desse valor
+                    
+
                     return 1 #retorno 1 representa que já foi alterado
             return 0 #retorno 0 representa que o ítem não existe no carrinho e será adicionado
         
         valor_pesquisa = pesquisar() #variável que pega o retorno da função pesquisar (valor 0 ou 1)
 
         if(valor_pesquisa == 0): #se o valor da pesquisa for igual a zero
+           
             #então a lista de carrinho recebe um json (dicionário em python) contendo produto, quantidade e valor
             carrinho.append({
-                            "produto": produto,
+                            "produto": lista_itens[produto]["nome"],
                             "quantidade": quantidade,
-                            "valor": resposta["lista"][0]["itens"][produto]["valor"]
+                            "valor": lista_itens[produto]["valor"]
                             })
+            messagebox.showinfo("Informação de compra", str(quantidade) + " " + lista_itens[produto]["nome"] + " adicionado(s) ao carrinho!")
 
         #mensagem que informa qual ítem foi adicionado
-        messagebox.showinfo("Informação de compra", resposta["lista"][0]["itens"][produto]["nome"] + " adicionado ao carrinho!")
+        
 
     #botão que tem a função de adiconar ítem ao carrinho
-    BtEnviar = Button(LadoDireito, text = "ADICIONAR AO CARRINHO", font = ("Arial", 12), bg = "goldenrod2",width = 25, cursor = "hand2", command= adc_carrinho)
+    BtEnviar = Button(LadoDireito, text = "ADICIONAR", font = ("Arial", 12), bg = "goldenrod2",width = 10, cursor = "hand2", command= adc_carrinho)
     BtEnviar.place(x = 10, y = 350)
 
-    #lista de ítens recebida pelo json
-    lista_itens = resposta["lista"][0]["itens"]
+    #botão que tem a função de adiconar ítem ao carrinho
+    BtRem = Button(LadoDireito, text = "REMOVER", font = ("Arial", 12), bg = "goldenrod2",width = 10, cursor = "hand2", command= rem_carrinho)
+    BtRem.place(x = 150, y = 350)
+
+    
 
     #funão de mostrar o carrinho
     def mostrar_carrinho():
         itens_carrinho = ["CARRINHO:\n\n"] #string inicial do conteúdo do carrinho
     
         for i in range (len(carrinho)): #laço que percorrerá todo o carrinho para pegar as informações de produto, quantidade e valor que contém np carrinho
-            itens_carrinho.append("Produto: " + lista_itens[carrinho[i]["produto"]]["nome"])
+            itens_carrinho.append("Produto: " + carrinho[i]["produto"])
             itens_carrinho.append("Quantidade: " + str(carrinho[i]["quantidade"]))
             itens_carrinho.append("Valor unitário: " + "R$" + str(carrinho[i]["valor"]))
             itens_carrinho.append("\n")
@@ -170,11 +214,27 @@ def listar():
         #total dos ítens no carrinho
         valor_total = 0
         for i in range (len(carrinho)):
-            valor_total = valor_total + (carrinho[i]["quantidade"] * carrinho[i]["valor"])
+            valor_total = valor_total + (int(carrinho[i]["quantidade"]) * int(carrinho[i]["valor"]))
 
         #componente que exibirá o valor total
         Total = Label(janela2, text = "TOTAL: R$" + str(valor_total), font = ("Arial", 16), bg = "gray15", fg = "white", justify="left")
         Total.place(x = 200, y = 300)
+
+        def finalizar():
+            if carrinho == []:
+                messagebox.showwarning("Informação de finalização", "Não existem produtos no carrinho!")
+            
+            elif carrinho != []:
+                jsonDict = {"c": "s", "carrinho": carrinho, "total": valor_total} #enviará para o servidor um json com um comando de salvar
+                data = json.dumps(jsonDict) #serializando o json 
+                sckt.sendall(bytes(data, encoding="utf-8"))
+                messagebox.showinfo("Informação de serviço", "Lista de compras finalizada!\nObrigado por utilizar o serviço!")
+                desconectar()
+
+
+        
+        BtFinalizar = Button(janela2, text = "FINALIZAR", font = ("Arial", 12), bg = "gray15", fg = "white", width = 12, cursor = "hand2", command=finalizar)
+        BtFinalizar.place(x = 10, y = 300)
 
     BtMc = Button(LadoDireito, text = "CARRINHO", font = ("Arial", 12), bg = "goldenrod2",width = 10, cursor = "hand2", command=mostrar_carrinho)
     BtMc.place(x = 180, y = 0)
