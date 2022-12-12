@@ -3,9 +3,9 @@
 
 # como utilizar?
 
-* 1º) inicie o servidor em um terminal: "python3 servidor.py".
+* 1º) inicie o servidor em um terminal: "python servidor.py" ou "python3 servidor.py".
 
-* 2º) inicie o cliente em outro terminal: "python3 libsock.py".
+* 2º) inicie o cliente em outro terminal: "python libsock.py" ou "python3 libsock.py".
 
 * 3º) clique em conectar (lado cliente).
 
